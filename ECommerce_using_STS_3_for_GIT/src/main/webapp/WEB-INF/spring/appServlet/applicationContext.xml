@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+						http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
+						http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.0.xsd
+						http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+	
+	<!-- Root Context: defines shared resources visible to all other web components -->
+	
+	<!-- Defines jdbc connection to h2 DB -->
+	<bean id="datasource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName" value="org.h2.Driver" />
+		<property name="url" value="jdbc:h2:tcp://localhost/~/test" />
+		<property name="username" value="sa" />
+		<property name="password" value="sa" />
+		
+		<!-- these names are standard.
+		E.g if we use 'driverUrl' instead of 'url' it gives error -->
+	</bean>
+	
+	<!-- sessionFactory is responsible for maintaining transactions and sessions -->
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		  <property name="dataSource" ref="datasource" />
+		  <property name="hibernateProperties">
+		  	<props>
+		  		<prop key="hibernate.dialect">org.hibernate.dialect.H2Dialect</prop>
+		  		<prop key="hibernate.hbm2ddl.auto">update</prop><!-- this valicates/exports the schema ddl to DB when the sessionFactory is created -->
+		  		<prop key="hibernate.show_sql">true</prop>
+		  		<prop key="hibernate.format_sql">true</prop>
+		  	</props>
+		  </property>
+		  
+		  <property name="packagesToScan">
+		  	<list>
+		  		<value>model</value>
+		  		<value>controller</value>
+		  		<value>dao</value>
+		  	</list>
+		  </property>
+	</bean>
+	
+	<bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+		  	<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+	
+	<!-- For file upload functionality -->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="maxUploadSize" value="1024000" /> <!-- this is 1 MB -->
+    </bean>
+    
+    <bean id="myBeansValidator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean" />
+		
+</beans>

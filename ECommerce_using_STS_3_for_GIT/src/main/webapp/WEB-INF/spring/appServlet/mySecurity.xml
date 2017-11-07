@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+						http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd">
+			
+	<beans:bean id="datasource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<beans:property name="driverClassName" value="org.h2.Driver" />
+		<beans:property name="url" value="jdbc:h2:tcp://localhost/~/test" />
+		<beans:property name="username" value="sa" />
+		<beans:property name="password" value="sa" />
+	</beans:bean>
+			
+	<!-- All the below Security tags are explained here on 
+	https://www.journaldev.com/2736/spring-security-example-userdetailsservice -->			
+			
+	<http auto-config="true">
+		<intercept-url pattern="/admin/**" access="ROLE_USER" /> 
+		
+		<!-- every URL that follows this pattern will be secured by Spring 
+		And it can be only accessed if the user has a this role defined here-->
+		<!-- 
+		/admin/ will be hit by default if login is success 
+		/login?error will be hit by default if login is failed
+		Username & password values here must be same as in login.jsp -> name attribute -->
+		
+		<form-login
+			login-page="/login"
+			default-target-url="/admin/" 
+			authentication-failure-url="/login?error"
+			username-parameter="username"
+			password-parameter="password"
+		/>
+					
+		<logout 
+			logout-success-url="/login?logout" 
+		/>
+	</http>	
+	
+	<authentication-manager>
+		<authentication-provider> <!-- datasource is defined above -->
+			<!-- Source from where we will be validating the credentials, here DB -->
+			<jdbc-user-service 
+				data-source-ref="datasource"
+				authorities-by-username-query="select username, authority from authorities where username = ?"
+				users-by-username-query="select username,password,enabled from users where username = ?" 
+			/>
+			
+			<!-- the above 2 queries are standard queries.
+			An SQL statement to query a username, password, and enabled status given a username. 
+			Default is "select username,password,enabled from users where username = ?"
+			 -->
+						
+		</authentication-provider>
+	</authentication-manager>
+</beans:beans>
